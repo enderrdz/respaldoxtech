@@ -125,6 +125,19 @@ app.use('/web/landing%201%20zapatos', express.static(path.join(__dirname, 'web/l
 app.use('/web/landing%202%20de%20ropa', express.static(path.join(__dirname, 'web/landing 2 de ropa/dist')));
 app.use('/web/landing%203%20de%20restaurantes', express.static(path.join(__dirname, 'web/landing 3 de restaurantes/dist')));
 
+// Serve individual landing files for direct access
+app.get('/web/landing%201%20zapatos/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web/landing 1 zapatos/dist/index.html'));
+});
+
+app.get('/web/landing%202%20de%20ropa/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web/landing 2 de ropa/dist/index.html'));
+});
+
+app.get('/web/landing%203%20de%20restaurantes/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web/landing 3 de restaurantes/dist/index.html'));
+});
+
 // Catch-all route for SPA (must be last)
 app.get(/^(?!\/api\/|\/web\/)/, (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
