@@ -20,8 +20,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { db } from './firebase';
-import { collection, query, onSnapshot } from 'firebase/firestore';
 import { useAuth } from './context/AuthContext';
 
 // Components
@@ -425,13 +423,13 @@ const Portfolio = () => {
   const [dynamicLandings, setDynamicLandings] = useState([]);
 
   useEffect(() => {
-    const q = query(collection(db, "landings"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = [];
-      snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-      setDynamicLandings(docs);
-    });
-    return unsubscribe;
+    const fetchLandings = () => {
+      fetch('/api/landings')
+        .then(r => r.json())
+        .then(data => setDynamicLandings(data))
+        .catch(console.error);
+    };
+    fetchLandings();
   }, []);
 
   const allProjects = [...PORTFOLIO_DATA, ...dynamicLandings];

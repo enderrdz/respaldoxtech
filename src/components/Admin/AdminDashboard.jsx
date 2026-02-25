@@ -1,35 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../../firebase';
-import { collection, addDoc, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { Trash2, Plus, ExternalLink, Image as ImageIcon } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [landings, setLandings] = useState([]);
     const [newLanding, setNewLanding] = useState({ title: '', img: '', url: '', category: 'Web' });
 
+    const fetchLandings = () => {
+        fetch('/api/landings')
+            .then(r => r.json())
+            .then(setLandings)
+            .catch(console.error);
+    };
+
     useEffect(() => {
-        const q = query(collection(db, "landings"));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const docs = [];
-            querySnapshot.forEach((doc) => docs.push({ id: doc.id, ...doc.data() }));
-            setLandings(docs);
-        });
-        return unsubscribe;
+        fetchLandings();
     }, []);
 
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!newLanding.title || !newLanding.img) return;
         try {
-            await addDoc(collection(db, "landings"), newLanding);
+            await fetch('/api/landings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newLanding)
+            });
             setNewLanding({ title: '', img: '', url: '', category: 'Web' });
+            fetchLandings();
         } catch (err) {
-            console.error("Error adding document: ", err);
+            console.error('Error añadiendo landing:', err);
         }
     };
 
     const handleDelete = async (id) => {
-        await deleteDoc(doc(db, "landings", id));
+        await fetch(`/api/landings/${id}`, { method: 'DELETE' });
+        fetchLandings();
     };
 
     return (
@@ -55,7 +60,7 @@ const AdminDashboard = () => {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Imagen (Miniatura URL)</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Imagen (URL de Miniatura)</label>
                                 <input
                                     type="text"
                                     value={newLanding.img}
@@ -71,7 +76,7 @@ const AdminDashboard = () => {
                                     value={newLanding.url}
                                     onChange={(e) => setNewLanding({ ...newLanding, url: e.target.value })}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors"
-                                    placeholder="https://demo.respaldoxtech..."
+                                    placeholder="https://mi-demo.vercel.app"
                                 />
                             </div>
                             <div>
@@ -86,7 +91,7 @@ const AdminDashboard = () => {
                                     <option value="Diseño">Diseño</option>
                                 </select>
                             </div>
-                            <button type="submit" className="w-full py-4 bg-purple-600 rounded-xl font-bold hover:scale-[1.02] transition-transform glow-purple mt-4">
+                            <button type="submit" className="w-full py-4 bg-purple-600 rounded-xl font-bold hover:scale-[1.02] transition-transform mt-4">
                                 Publicar en la Web
                             </button>
                         </form>
@@ -97,11 +102,11 @@ const AdminDashboard = () => {
                 <div className="lg:col-span-2">
                     <div className="grid sm:grid-cols-2 gap-6">
                         {landings.map((item) => (
-                            <div key={item.id} className="glass-morphism rounded-3xl overflow-hidden group border border-white/5">
+                            <div key={item._id} className="glass-morphism rounded-3xl overflow-hidden group border border-white/5">
                                 <div className="aspect-video relative overflow-hidden">
                                     <img src={item.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                                        <button onClick={() => handleDelete(item.id)} className="p-3 bg-red-500 rounded-xl hover:scale-110 transition-transform">
+                                        <button onClick={() => handleDelete(item._id)} className="p-3 bg-red-500 rounded-xl hover:scale-110 transition-transform">
                                             <Trash2 size={20} />
                                         </button>
                                         {item.url && (
@@ -112,17 +117,15 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
                                 <div className="p-6">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">{item.category}</span>
-                                    </div>
-                                    <h3 className="font-bold font-outfit">{item.title}</h3>
+                                    <span className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">{item.category}</span>
+                                    <h3 className="font-bold font-outfit mt-1">{item.title}</h3>
                                 </div>
                             </div>
                         ))}
                         {landings.length === 0 && (
                             <div className="col-span-full py-20 text-center border-2 border-dashed border-white/10 rounded-[40px]">
                                 <ImageIcon size={48} className="mx-auto text-gray-700 mb-4" />
-                                <p className="text-gray-500">No hay landings gestionadas dinámicamente aún.</p>
+                                <p className="text-gray-500">No hay landings gestionadas aún.</p>
                             </div>
                         )}
                     </div>

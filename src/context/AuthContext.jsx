@@ -1,43 +1,51 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signOut,
-    createUserWithEmailAndPassword
-} from 'firebase/auth';
-import { auth } from '../firebase';
 
 const AuthContext = createContext();
-
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(() => {
+        const stored = localStorage.getItem('rxt_user');
+        return stored ? JSON.parse(stored) : null;
+    });
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            setLoading(false);
+    const login = async (email, password) => {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
         });
-        return unsubscribe;
-    }, []);
-
-    const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
-    const logout = () => signOut(auth);
-    const signup = (email, password) => createUserWithEmailAndPassword(auth, email, password);
-
-    const value = {
-        user,
-        login,
-        logout,
-        signup,
-        loading
+        if (!res.ok) throw new Error('Credenciales incorrectas');
+        const data = await res.json();
+        localStorage.setItem('rxt_user', JSON.stringify(data));
+        setUser(data);
+        return data;
     };
+
+    const logout = () => {
+        localStorage.removeItem('rxt_user');
+        setUser(null);
+    };
+
+    const signup = async (email, password) => {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        if (!res.ok) throw new Error('El email ya existe');
+        const data = await res.json();
+        localStorage.setItem('rxt_user', JSON.stringify(data));
+        setUser(data);
+        return data;
+    };
+
+    const value = { user, login, logout, signup, loading };
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };

@@ -8,12 +8,15 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite preview --port $PORT --host"
+    "start": "node server.mjs"
   },
   "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "firebase": "^12.9.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
+    "mongoose": "^9.2.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1"

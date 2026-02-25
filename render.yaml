@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: respaldoxtech
+    env: node
+    plan: free
+    buildCommand: yarn install && yarn build
+    startCommand: node server.mjs
+    envVars:
+      - key: NODE_OPTIONS
+        value: --max_old_space_size=512
+      - key: MONGO_URI
+        value: mongodb+srv://w:123456a@cluster0.5msk202.mongodb.net/respaldoxtech?retryWrites=true&w=majority&appName=Cluster0
