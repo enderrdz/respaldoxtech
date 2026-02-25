@@ -120,6 +120,9 @@ app.post('/api/auth/register', async (req, res) => {
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
 
+// Serve landing pages from web directory
+app.use('/web', express.static(path.join(__dirname, 'web')));
+
 // Catch-all route for SPA (must be last)
 app.get(/^(?!\/api\/)/, (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
