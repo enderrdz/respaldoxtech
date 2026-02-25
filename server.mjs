@@ -97,7 +97,9 @@ app.post('/api/auth/register', async (req, res) => {
 // --- SERVE FRONTEND ---
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
-app.get('/app/:path', (req, res) => {
+
+// Catch-all route for SPA (must be last)
+app.get('*', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
 });
 
