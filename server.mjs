@@ -14,9 +14,31 @@ app.use(cors());
 app.use(express.json());
 
 // --- DATABASE CONNECTION ---
-mongoose.connect(MONGO_URI)
+mongoose.connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 30000, // 30 segundos timeout
+    socketTimeoutMS: 45000, // 45 segundos timeout
+})
     .then(() => console.log('[MongoDB] Conectado a Atlas'))
-    .catch(err => console.error('[MongoDB] Error de conexión:', err));
+    .catch(err => {
+        console.error('[MongoDB] Error de conexión:', err.message);
+        console.error('[MongoDB] Código de error:', err.code);
+        console.error('[MongoDB] Detalles:', {
+            name: err.name,
+            stack: err.stack,
+            message: err.message
+        });
+        
+        // Intentar conectar con credenciales por separado
+        if (err.message.includes('authentication failed')) {
+            console.log('[MongoDB] Error de autenticación detectado');
+            console.log('[MongoDB] Por favor verifica:');
+            console.log('  - Usuario y contraseña correctos');
+            console.log('  - IP permitida en MongoDB Atlas');
+            console.log('  - Base de datos existente');
+        }
+    });
 
 // --- SCHEMAS ---
 const LandingSchema = new mongoose.Schema({
@@ -99,7 +121,7 @@ const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
 
 // Catch-all route for SPA (must be last)
-app.get(/^(?!\/api\/)/, (req, res) => {
+app.get('*', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
 });
 
