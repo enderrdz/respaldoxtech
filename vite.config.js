@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
   },
   preview: {
     port: process.env.PORT || 4173,
-    host: true
+    host: true,
+    allowedHosts: ['respaldoxtech.onrender.com']
   }
 }))
