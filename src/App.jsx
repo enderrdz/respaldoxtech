@@ -508,6 +508,82 @@ const Portfolio = () => {
   );
 };
 
+const LandingSelector = () => {
+  const landings = [
+    {
+      id: 1,
+      title: "Landing de Zapatos",
+      category: "Web",
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
+      url: "/web/landing%201%20zapatos",
+      description: "Diseño moderno para tienda de calzado con galería premium y experiencia de compra optimizada."
+    },
+    {
+      id: 2,
+      title: "Landing de Ropa",
+      category: "Web", 
+      image: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80",
+      url: "/web/landing%202%20de%20ropa",
+      description: "Catálogo de moda con filtros inteligentes y visualización de productos elegante."
+    },
+    {
+      id: 3,
+      title: "Landing de Restaurante",
+      category: "Web",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80", 
+      url: "/web/landing%203%20de%20restaurantes",
+      description: "Menú digital interactivo con reservaciones en línea y ambiente gastronómico premium."
+    }
+  ];
+
+  return (
+    <section id="landings" className="py-32 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 font-outfit">Landings <span className="text-gradient-purple">Demo</span></h2>
+          <p className="text-gray-400 max-w-2xl mx-auto">Selecciona una de nuestras landings de demostración para probar nuestras soluciones web.</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {landings.map((landing) => (
+            <motion.div
+              key={landing.id}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="glass-morphism p-8 rounded-[32px] group relative overflow-hidden h-full flex flex-col"
+            >
+              <div className="w-full h-48 rounded-2xl overflow-hidden mb-6">
+                <img 
+                  src={landing.image} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  alt={landing.title} 
+                />
+              </div>
+              
+              <div className="flex-grow">
+                <p className="text-yellow-500 font-bold text-xs uppercase tracking-widest mb-3">{landing.category}</p>
+                <h3 className="text-2xl font-bold mb-4 font-outfit">{landing.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-grow">{landing.description}</p>
+              </div>
+
+              <div className="mt-auto">
+                <a
+                  href={landing.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-purple-900/20 group-hover:scale-[1.02]"
+                >
+                  <ExternalLink size={20} />
+                  Ver Demo Online
+                </a>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const Contact = () => {
   const [formState, setFormState] = useState('idle'); // idle, loading, success
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -594,6 +670,7 @@ const MainSite = () => (
   <>
     <Hero />
     <Services />
+    <LandingSelector />
     <Portfolio />
     <Contact />
   </>
