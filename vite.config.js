@@ -3,9 +3,16 @@ import react from '@vitejs/plugin-react'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), basicSsl()],
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react(),
+    mode === 'development' ? basicSsl() : null
+  ].filter(Boolean),
   server: {
-    https: true,
+    https: mode === 'development',
+  },
+  preview: {
+    port: process.env.PORT || 4173,
+    host: true
   }
-})
+}))
