@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --font-playfair: "Playfair Display", serif;
+  --font-inter: Inter, sans-serif;
+  --color-primary: #d4af37;
+  --color-primary-hover: #b8962f;
+  --color-dark-bg: #0a0a0a;
+  --color-dark-card: #141414;
+  --shadow-primary: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-white font-inter overflow-x-hidden;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-playfair;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-black px-6 py-3 rounded-md font-semibold transition-all duration-300 hover:bg-primary-hover hover:-translate-y-1 hover:shadow-primary inline-block text-center;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-primary border border-primary px-6 py-3 rounded-md font-semibold transition-all duration-300 hover:bg-primary hover:text-black inline-block text-center;
+  }
+
+  .glass-nav {
+    @apply bg-dark-bg/80 backdrop-blur-md border-b border-white/10;
+  }
+
+  .section-padding {
+    @apply py-20 px-[10%] md:px-[5%];
+  }
+}
+
+.heading-gold {
+  @apply text-primary;
+}
+
+::selection {
+  @apply bg-primary text-black;
+}
