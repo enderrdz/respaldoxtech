@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "npm run build && vite preview --port $PORT --host"
+    "start": "vite preview --port $PORT --host"
   },
   "dependencies": {
     "firebase": "^12.9.0",

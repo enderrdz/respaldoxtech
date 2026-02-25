@@ -14,8 +14,20 @@ import {
   Zap,
   Star,
   CheckCircle2,
-  Send
+  Send,
+  User,
+  ShieldCheck,
+  ExternalLink
 } from 'lucide-react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { db } from './firebase';
+import { collection, query, onSnapshot } from 'firebase/firestore';
+import { useAuth } from './context/AuthContext';
+
+// Components
+import Login from './components/Auth/Login';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import ChatBox from './components/Chat/ChatBox';
 
 // --- DATA CONSTANTS ---
 const SERVICES_DATA = [
@@ -89,6 +101,9 @@ const PORTFOLIO_DATA = [
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -97,17 +112,34 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Inicio', href: '#inicio' },
-    { name: 'Servicios', href: '#servicios' },
-    { name: 'Portafolio', href: '#ejemplos' },
-    { name: 'Contacto', href: '#contacto' },
+    { name: 'Inicio', href: '/#inicio' },
+    { name: 'Servicios', href: '/#servicios' },
+    { name: 'Portafolio', href: '/#ejemplos' },
+    { name: 'Contacto', href: '/#contacto' },
   ];
 
+  const handleNavClick = (href) => {
+    setIsMenuOpen(false);
+    if (href.startsWith('/#')) {
+      const id = href.split('#')[1];
+      if (location.pathname !== '/') {
+        navigate('/');
+        setTimeout(() => {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      navigate(href);
+    }
+  };
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${isScrolled ? 'py-4 bg-black/60 backdrop-blur-xl border-b border-white/5' : 'py-8 bg-transparent'
+    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${isScrolled || location.pathname !== '/' ? 'py-4 bg-black/60 backdrop-blur-xl border-b border-white/5' : 'py-8 bg-transparent'
       }`}>
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <div className="flex items-center gap-2 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/')}>
           <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center glow-purple group-hover:rotate-12 transition-transform">
             <Layout className="text-white" size={20} />
           </div>
@@ -118,13 +150,34 @@ const Navbar = () => {
 
         <div className="hidden md:flex items-center gap-10">
           {navLinks.map((item) => (
-            <a key={item.name} href={item.href} className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+            <button
+              key={item.name}
+              onClick={() => handleNavClick(item.href)}
+              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+            >
               {item.name}
-            </a>
+            </button>
           ))}
-          <a href="#contacto" className="px-6 py-2.5 bg-white text-black rounded-full text-sm font-bold hover:bg-purple-500 hover:text-white transition-all shadow-lg hover:shadow-purple-500/30">
-            Pide Presupuesto
-          </a>
+
+          {user ? (
+            <div className="flex items-center gap-6 border-l border-white/10 pl-6 ml-2">
+              <button
+                onClick={() => navigate(user.email === 'admin@respaldoxtech.net' ? '/admin' : '/client')}
+                className="flex items-center gap-2 text-sm font-bold text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                {user.email === 'admin@respaldoxtech.net' ? <ShieldCheck size={18} /> : <User size={18} />}
+                Portal
+              </button>
+              <button onClick={logout} className="text-xs text-gray-500 hover:text-red-400 transition-colors">Salir</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              className="px-6 py-2.5 bg-white text-black rounded-full text-sm font-bold hover:bg-purple-500 hover:text-white transition-all shadow-lg hover:shadow-purple-500/30"
+            >
+              Portal Clientes
+            </button>
+          )}
         </div>
 
         <button className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -142,11 +195,15 @@ const Navbar = () => {
           >
             <div className="flex flex-col p-6 gap-6">
               {navLinks.map((item) => (
-                <a key={item.name} href={item.href} className="text-lg font-medium" onClick={() => setIsMenuOpen(false)}>
+                <button key={item.name} onClick={() => handleNavClick(item.href)} className="text-lg font-medium text-left">
                   {item.name}
-                </a>
+                </button>
               ))}
-              <a href="#contacto" className="w-full py-4 bg-purple-600 rounded-xl font-bold text-center" onClick={() => setIsMenuOpen(false)}>Consigue tu Web</a>
+              {user ? (
+                <button onClick={() => { setIsMenuOpen(false); navigate('/admin'); }} className="w-full py-4 bg-purple-600 rounded-xl font-bold text-center">Mi Portal</button>
+              ) : (
+                <button onClick={() => { setIsMenuOpen(false); navigate('/login'); }} className="w-full py-4 bg-white text-black rounded-xl font-bold text-center">Acceso Clientes</button>
+              )}
             </div>
           </motion.div>
         )}
@@ -365,10 +422,23 @@ const Services = () => {
 
 const Portfolio = () => {
   const [filter, setFilter] = useState('Todo');
+  const [dynamicLandings, setDynamicLandings] = useState([]);
+
+  useEffect(() => {
+    const q = query(collection(db, "landings"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs = [];
+      snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+      setDynamicLandings(docs);
+    });
+    return unsubscribe;
+  }, []);
+
+  const allProjects = [...PORTFOLIO_DATA, ...dynamicLandings];
 
   const filteredProjects = filter === 'Todo'
-    ? PORTFOLIO_DATA
-    : PORTFOLIO_DATA.filter(p => p.category === filter);
+    ? allProjects
+    : allProjects.filter(p => p.category === filter);
 
   return (
     <section id="ejemplos" className="py-32 px-6 bg-black/40">
@@ -376,7 +446,7 @@ const Portfolio = () => {
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
           <div>
             <h2 className="text-4xl md:text-5xl font-bold mb-4 font-outfit">Nuestras <span className="text-gradient-purple">Obras</span></h2>
-            <p className="text-gray-400">Visualiza ejemplos de lo que podemos crear para ti.</p>
+            <p className="text-gray-400">Demos exclusivas y proyectos entregados a nuestros clientes.</p>
           </div>
           <div className="flex gap-4 p-1 rounded-full bg-white/5 border border-white/10 overflow-x-auto whitespace-nowrap">
             {['Todo', 'Web', 'Mobile', 'Diseño'].map((cat) => (
@@ -412,6 +482,21 @@ const Portfolio = () => {
               >
                 <img src={project.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={project.title} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+
+                {/* Overlay for dynamic projects with URLs */}
+                {project.url && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-6 py-3 bg-white text-black rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-transform"
+                    >
+                      Ver Demo Online <ExternalLink size={18} />
+                    </a>
+                  </div>
+                )}
+
                 <div className="absolute bottom-0 left-0 p-8">
                   <p className="text-yellow-500 font-bold text-xs uppercase tracking-widest mb-2">{project.category}</p>
                   <h4 className="text-xl font-bold text-white uppercase font-outfit">{project.title}</h4>
@@ -507,6 +592,15 @@ const Contact = () => {
   );
 };
 
+const MainSite = () => (
+  <>
+    <Hero />
+    <Services />
+    <Portfolio />
+    <Contact />
+  </>
+);
+
 function App() {
   return (
     <div className="min-h-screen bg-[#020202]">
@@ -517,10 +611,15 @@ function App() {
       </div>
 
       <Navbar />
-      <Hero />
-      <Services />
-      <Portfolio />
-      <Contact />
+
+      <Routes>
+        <Route path="/" element={<MainSite />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/client" element={<div className="pt-32 px-6 text-center"><h1>Portal de Cliente en Construcción</h1><p>Usa el chat abajo para coordinar con nosotros.</p></div>} />
+      </Routes>
+
+      <ChatBox />
 
       <footer className="py-12 px-6 border-t border-white/5 text-center text-gray-600 text-sm">
         &copy; 2026 RespaldoXTech. Diseñado para el Futuro.
