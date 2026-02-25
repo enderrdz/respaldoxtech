@@ -121,7 +121,9 @@ const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
 
 // Serve landing pages from web directory
-app.use('/web', express.static(path.join(__dirname, 'web')));
+app.use('/web/landing%201%20zapatos', express.static(path.join(__dirname, 'web/landing 1 zapatos/dist')));
+app.use('/web/landing%202%20de%20ropa', express.static(path.join(__dirname, 'web/landing 2 de ropa/dist')));
+app.use('/web/landing%203%20de%20restaurantes', express.static(path.join(__dirname, 'web/landing 3 de restaurantes/dist')));
 
 // Catch-all route for SPA (must be last)
 app.get(/^(?!\/api\/)/, (req, res) => {
