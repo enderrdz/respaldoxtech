@@ -566,15 +566,13 @@ const LandingSelector = () => {
               </div>
 
               <div className="mt-auto">
-                <a
-                  href={landing.url}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  onClick={() => window.open(landing.url, '_blank')}
                   className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-purple-900/20 group-hover:scale-[1.02]"
                 >
                   <ExternalLink size={20} />
                   Ver Demo Online
-                </a>
+                </button>
               </div>
             </motion.div>
           ))}
