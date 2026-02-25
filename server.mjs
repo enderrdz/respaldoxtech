@@ -99,7 +99,7 @@ const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
 
 // Catch-all route for SPA (must be last)
-app.get('*', (req, res) => {
+app.get(/^(?!\/api\/)/, (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
 });
 
