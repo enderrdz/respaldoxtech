@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://w:123456a@cluster0.5msk202.mongodb.net/respaldoxtech?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://w:123456a@cluster0.5msk202.mongodb.net/?appName=Cluster0';
 
 // --- MIDDLEWARE ---
 app.use(cors());
