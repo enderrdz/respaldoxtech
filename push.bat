@@ -5,7 +5,8 @@ echo 1. Inicializando Git...
 git init
 
 echo 2. Asegurando rama main...
-git branch -M master
+git branch -M main
+
 
 echo 3. Agregando archivos (esto puede tardar un poco)...
 git add .
