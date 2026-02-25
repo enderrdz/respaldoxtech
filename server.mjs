@@ -97,7 +97,7 @@ app.post('/api/auth/register', async (req, res) => {
 // --- SERVE FRONTEND ---
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
-app.get('*', (req, res) => {
+app.get('/app/:path', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
 });
 
