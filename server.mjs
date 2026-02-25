@@ -126,7 +126,7 @@ app.use('/web/landing%202%20de%20ropa', express.static(path.join(__dirname, 'web
 app.use('/web/landing%203%20de%20restaurantes', express.static(path.join(__dirname, 'web/landing 3 de restaurantes/dist')));
 
 // Catch-all route for SPA (must be last)
-app.get(/^(?!\/api\/)/, (req, res) => {
+app.get(/^(?!\/api\/|\/web\/)/, (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
 });
 
